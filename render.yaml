@@ -12,7 +12,7 @@ services:
       - key: NODE_VERSION
         value: "22"
       - key: SUPABASE_URL
-        sync: false
+        value: https://ueefxkomucnkvvmqrdmw.supabase.co
       - key: SUPABASE_SECRET_KEY
         sync: false
       - key: API_KEY
