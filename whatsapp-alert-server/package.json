@@ -1,7 +1,7 @@
 {
   "name": "inkthreadhub-wa-alert",
   "version": "1.0.0",
-  "description": "InkThreadHub WhatsApp alert server (Baileys + MongoDB)",
+  "description": "InkThreadHub WhatsApp alert server (Baileys + Supabase)",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
