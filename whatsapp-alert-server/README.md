@@ -141,13 +141,15 @@ Header: Content-Type: application/json
 | `GET /qr?key=` | QR page (pehli baar) |
 | `GET /pair?key=` | Pairing code (pehli baar) |
 | `POST /alert` | Ready-made alert → `ALERT_TO` |
-| `POST /send` | Koi bhi message: `{ "to", "message", "image_url" }` |
+| `POST /send` | Apna text: `{ "message", "image_url" }` → sirf `ALERT_TO` |
 
 Har POST pe header `x-api-key` zaroori.
 
 ---
 
 ## Ban se bachne ke rules
+
+- Server **sirf `ALERT_TO`** (aapka number) pe message bhejta hai. Kisi aur number pe bhejne ka option code me hai hi nahi.
 
 - Sender **sirf alag SIM**. 9194115127 ko kabhi is server se link mat karna.
 - Din me 1–5 message tak. Bulk / unknown numbers ko mat bhejna.

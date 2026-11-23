@@ -158,12 +158,13 @@ app.get('/pair', requireKey, async (req, res) => {
   }
 });
 
-// Generic: { "to": "919194115127", "message": "text", "image_url": "optional" }
+// Free text message — SIRF ALERT_TO (aapke number) pe jata hai. Kisi aur number pe bhejna band hai.
+// { "message": "text", "image_url": "optional" }
 app.post('/send', requireKey, async (req, res) => {
   try {
-    const { to = ALERT_TO, message, image_url } = req.body || {};
+    const { message, image_url } = req.body || {};
     if (!message) return res.status(400).json({ ok: false, error: 'message required' });
-    const id = await sendText(to, message, image_url);
+    const id = await sendText(ALERT_TO, message, image_url);
     res.json({ ok: true, message_id: id });
   } catch (e) {
     res.status(503).json({ ok: false, error: e.message });
