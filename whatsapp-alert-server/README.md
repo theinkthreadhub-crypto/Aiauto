@@ -5,24 +5,25 @@ Make.com ka pipeline khatam hota hai → is server ko HTTP call → **alag SIM**
 ```
 Make.com ──HTTP POST /alert──► Render (ye server) ──Baileys──► Alag SIM WhatsApp ──► 919194115127
                                     │
-                                    └── session MongoDB Atlas me save (restart pe QR nahi)
+                                    └── session Supabase me save (restart pe QR nahi)
 ```
 
-**Kharcha: ₹0.** Render free + MongoDB Atlas free. Card nahi chahiye.
+**Kharcha: ₹0.** Render free + Supabase free (aapka existing account). Card nahi chahiye.
 
 ---
 
-## Step 1 — MongoDB Atlas (session save karne ke liye)
+## Step 1 — Supabase table (session save karne ke liye)
 
-1. https://www.mongodb.com/cloud/atlas/register → Google se sign up.
-2. **Create cluster** → **M0 Free** → Region: **Mumbai (ap-south-1)** → Create.
-3. **Database Access** → Add user → username `inkbot`, strong password → Role: *Read and write to any database*.
-4. **Network Access** → Add IP → `0.0.0.0/0` (Render ka IP fix nahi hota).
-5. **Connect** → Drivers → string copy karo:
-   ```
-   mongodb+srv://inkbot:<PASSWORD>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
-   ```
-   `<PASSWORD>` ki jagah asli password daalo. Ye `MONGODB_URI` hai.
+1. https://supabase.com/dashboard → apna project kholo (naya bhi bana sakte ho, Region: **Mumbai**).
+2. Left menu → **SQL Editor** → **New query**.
+3. `supabase.sql` file ka poora text paste karo → **Run**. `wa_auth` table ban jayega.
+4. **Project Settings → API Keys** (ya **Data API**):
+   - **Project URL** copy karo → ye `SUPABASE_URL` hai.
+   - **Secret key** (`sb_secret_...`) copy karo. Purane project me naam **service_role** hai. Ye `SUPABASE_SECRET_KEY` hai.
+
+⚠️ Secret key ko kabhi website / Make.com / public jagah mat daalna. Sirf Render me.
+
+⚠️ Supabase free project 7 din bina use ke **pause** ho jata hai. Roz ka alert use karta rahega, toh pause nahi hoga. Pipeline hafte bhar band rahe, toh dashboard se **Restore** dabao.
 
 ## Step 2 — API_KEY banao
 
@@ -37,7 +38,8 @@ Ye password hai. Sirf Render aur Make.com me daalna hai. Kisi ko mat dikhana.
 3. Env variables maangega:
    | Key | Value |
    |---|---|
-   | `MONGODB_URI` | Step 1 wali string |
+   | `SUPABASE_URL` | Step 1 ka Project URL |
+   | `SUPABASE_SECRET_KEY` | Step 1 ki secret key |
    | `API_KEY` | Step 2 wali key |
    | `SENDER_NUMBER` | Alag SIM ka number, `91` ke saath (jaise `91XXXXXXXXXX`) |
    | `ALERT_TO` | `919194115127` (pehle se bhara) |
@@ -160,6 +162,6 @@ Har POST pe header `x-api-key` zaroori.
 | Make me timeout | HTTP module timeout 120 karo. |
 | `401 Unauthorized` | `x-api-key` galat. |
 | `503 WhatsApp not connected` | Render logs dekho. 1 min baad retry. |
-| Render deploy fail | Logs me `MONGODB_URI` error → string / password / Network Access check karo. |
+| Render deploy fail / `Supabase:` error | URL + secret key check karo. `supabase.sql` run hua ya nahi dekho. Project paused toh Restore. |
 
 **Optional:** Render ko jagaa rakhne ke liye https://uptimerobot.com (free) se `/health` pe har 10 min ping. Alert turant aayega.

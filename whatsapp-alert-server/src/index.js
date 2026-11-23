@@ -3,32 +3,33 @@
 import express from 'express';
 import pino from 'pino';
 import QRCode from 'qrcode';
-import { MongoClient } from 'mongodb';
+import { createClient } from '@supabase/supabase-js';
 import makeWASocket, {
   Browsers,
   DisconnectReason,
   fetchLatestBaileysVersion,
 } from 'baileys';
-import { useMongoAuthState } from './mongoAuthState.js';
+import { useSupabaseAuthState } from './supabaseAuthState.js';
 
 const {
   PORT = 3000,
-  MONGODB_URI,
+  SUPABASE_URL,
+  SUPABASE_SECRET_KEY,
   API_KEY,
   ALERT_TO = '919194115127',
   SENDER_NUMBER = '', // alag SIM ka number, pairing code ke liye (91XXXXXXXXXX)
   BRAND_NAME = 'InkThreadHub',
 } = process.env;
 
-if (!MONGODB_URI || !API_KEY) {
-  console.error('MONGODB_URI aur API_KEY env variables zaroori hain.');
+if (!SUPABASE_URL || !SUPABASE_SECRET_KEY || !API_KEY) {
+  console.error('SUPABASE_URL, SUPABASE_SECRET_KEY aur API_KEY env variables zaroori hain.');
   process.exit(1);
 }
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'warn' });
-const mongo = new MongoClient(MONGODB_URI);
-await mongo.connect();
-const authCollection = mongo.db('inkthreadhub').collection('wa_auth');
+const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
 
 let sock = null;
 let status = 'starting'; // starting | qr | open | closed
@@ -36,7 +37,7 @@ let latestQR = null;
 let reconnectTimer = null;
 
 async function startSocket() {
-  const auth = await useMongoAuthState(authCollection);
+  const auth = await useSupabaseAuthState(supabase);
   const { version } = await fetchLatestBaileysVersion().catch(() => ({ version: undefined }));
 
   sock = makeWASocket({
@@ -188,8 +189,5 @@ startSocket().catch((e) => {
 });
 
 for (const sig of ['SIGINT', 'SIGTERM']) {
-  process.on(sig, async () => {
-    await mongo.close().catch(() => {});
-    process.exit(0);
-  });
+  process.on(sig, () => process.exit(0));
 }
